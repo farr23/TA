@@ -1,6 +1,6 @@
 <?php
 
-function getProducts($koneksi, $status = 'aktif') {
+function getProducts($koneksi, $status = '1') {
     $query = "SELECT * FROM tb_produk WHERE status = '$status'";
     $result = mysqli_query($koneksi, $query);
     $produk = [];
