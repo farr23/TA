@@ -16,6 +16,7 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="<?= $main_url ?>asset/AdminLTE-3.2.0/dist/css/adminlte.min.css">
   <link rel="shortcut icon" href="<?= $main_url ?>asset/image/cq.png" type="image/x-icon">
+  <script src="<?= $main_url ?>asset/AdminLTE-3.2.0/plugins/jquery/jquery.min.js"></script>
 </head>
 <!--
 `body` tag options:
