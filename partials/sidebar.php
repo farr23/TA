@@ -82,8 +82,11 @@
             </li>
             <!-- iki gandengane -->
             <?php } ?>
-
+            
             <li class="nav-header">Transaksi</li>
+            <?php
+            if(userlogin()['level'] != 2){
+            ?>
             <li class="nav-item">
                 <a href="<?= $main_url ?>pembelian" class="nav-link">
                     <i class="nav-icon fas fa-shopping-cart text-sm"></i>
@@ -112,6 +115,7 @@
                         </a>
                     </li>
                 </ul>
+                <?php }?>
             </li>
             <li class="nav-item">
                 <a href="<?= $main_url ?>stok_opname" class="nav-link">
@@ -126,6 +130,7 @@
                     <p>Produksi</p>
                 </a>
             </li>
+            
             <li class="nav-header">Laporan</li>
             <li class="nav-item">
                 <a href="<?= $main_url ?>laporan_pembelian/laporan.php" class="nav-link">

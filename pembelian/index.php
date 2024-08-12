@@ -58,7 +58,7 @@ if (isset($_POST['simpan'])) {
     if (simpan($_POST)) {
         echo "<script>
                 alert('data pembelian berhasil disimpan');
-                document.location = 'cetak_struk.php?no_transbeli=$notransbeli';
+                document.location = 'index.php?tgl=$tgl';
         </script>";
     }
 }

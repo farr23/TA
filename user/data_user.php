@@ -78,8 +78,10 @@ require "../partials/sidebar.php";
                                         echo "Administrator";
                                     } else if($user['level'] == 2){
                                         echo "Manager";
-                                    } else {
+                                    } else if($user['level'] == 3){
                                         echo "Operator";
+                                    } else {
+                                        echo "Operator2";
                                     }
                                     ?>
                                 </td>

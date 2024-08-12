@@ -70,30 +70,30 @@ if ($msg == 'updated') {
                 ?>
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-list text-sm mr-2"></i> Data Bahan Keluar</h3>
-                    <a href="<?= $main_url ?>penggunaan/trans_keluar.php" class="btn btn-sm btn-primary float-right"><i class="fas fa-plus text-sm mr-2"></i>Form Bahan Keluar</a>
                 </div>
                 <div class="card-body table-responsive p-3">
                     <table class="table table-hover text-nowrap" id="tbdata">
                         <thead>
                             <tr>
-                                <th>ID Produksi</th>
+                                <th>Kode Produksi</th>
                                 <th>Tanggal Produksi</th>
-                                <th>ID Bahan</th>
+                                <th>Nama Bahan</th>
                                 <th class="text-center">Jumlah</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
                             $bahan_keluar = getData("
-                                SELECT p.no_produksi, p.tgl_produksi, d.id_bahan, d.jumlah 
+                                SELECT p.no_produksi, p.tgl_produksi, d.id_bahan, b.nm_bahan, d.jumlah 
                                 FROM tb_produksi p
                                 JOIN tb_produksi_detail d ON p.no_produksi = d.no_produksi
+                                JOIN tb_bahan b ON d.id_bahan = b.id_bahan;
                             ");
                             foreach ($bahan_keluar as $bhn) { ?>
                                 <tr>
                                     <td><?= $bhn['no_produksi'] ?></td>
                                     <td><?= $bhn['tgl_produksi'] ?></td>
-                                    <td><?= $bhn['id_bahan'] ?></td>
+                                    <td><?= $bhn['nm_bahan'] ?></td>
                                     <td class="text-center"><?= number_format($bhn['jumlah'], 0, ',', '.') ?></td>
                                 </tr>
                             <?php } ?>

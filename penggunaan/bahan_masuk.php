@@ -41,6 +41,7 @@ if ($msg == 'updated') {
                 </div>';
 }
 
+
 ?>
 
 <div class="content-wrapper">
@@ -70,15 +71,13 @@ if ($msg == 'updated') {
                 ?>
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-list text-sm mr-2"></i> Data Bahan Masuk</h3>
-                    <a href="<?= $main_url ?>penggunaan/trans_masuk.php" class="btn btn-sm btn-primary float-right"><i class="fas fa-plus text-sm mr-2"></i>Form Bahan Masuk</a>
                 </div>
                 <div class="card-body table-responsive p-3">
                     <table class="table table-hover text-nowrap" id="tbdata">
                         <thead>
                             <tr>
-                                <th>ID Pembelian</th>
+                                <th>Kode Pembelian</th>
                                 <th>Tanggal Pembelian</th>
-                                <th>ID Bahan</th>
                                 <th>Nama Bahan</th>
                                 <th class="text-center">Jumlah</th>
                             </tr>
@@ -94,7 +93,6 @@ if ($msg == 'updated') {
                                 <tr>
                                     <td><?= $bhn['no_transbeli'] ?></td>
                                     <td><?= $bhn['tgl_transbeli'] ?></td>
-                                    <td><?= $bhn['id_bahan'] ?></td>
                                     <td><?= $bhn['nm_bahan'] ?></td>
                                     <td class="text-center"><?= number_format($bhn['jumlah'], 0, ',', '.') ?></td>
                                 </tr>

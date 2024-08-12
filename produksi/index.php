@@ -39,6 +39,18 @@ if (isset($_GET['pilihproduk'])) {
     $selectedKategori = !empty($kategoriData) ? $kategoriData[0] : null;
 }
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['prosespesanan']) && isset($_POST['id_pesanan'])) {
+        $id_pesanan = $_POST['id_pesanan'];
+        prosespesanan($id_pesanan);
+
+        echo "<script>
+                alert('Pesanan berhasil diproses');
+                document.location = 'hasil_produksi.php';
+        </script>";
+    }
+}
+
 if (isset($_POST['simpan'])) {
 
     if (simpan($_POST)) {
@@ -192,37 +204,37 @@ $notransproduksi = generateno();
                 </form>
                 </div>
                 <h5>Pesanan Siap Diproduksi</h5>
-<table class="table table-sm table-hover text-nowrap">
-    <thead>
-        <tr>
-            <th>No Pesan</th>
-            <th>Tanggal</th>
-            <th>Customer</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($pendingOrders as $order) { ?>
-        <tr>
-            <td><?= $order['id_pesanan'] ?></td>
-            <td><?= $order['tanggal_pesanan'] ?></td>
-            <td><?= $order['nm_customer'] ?></td>
-            <td><?= number_format($order['total'], 0, ',', '.') ?></td>
-            <td><?= $order['status'] ?></td>
-            <td>
-                <form action="" method="post">
-                    <input type="hidden" name="id_pesanan" value="<?= $order['id_pesanan'] ?>">
-                    <button type="submit" name="processOrder" class="btn btn-sm btn-success">Proses Produksi</button>
-                </form>
-            </td>
-        </tr>
-    <?php } ?>
-    </tbody>
-</table>
-                </section>
-                </div>
+                <table class="table table-sm table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>No Pesan</th>
+                            <th>Tanggal</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($pendingOrders as $order) { ?>
+                        <tr>
+                            <td><?= $order['id_pesanan'] ?></td>
+                            <td><?= $order['tanggal_pesanan'] ?></td>
+                            <td><?= $order['nm_customer'] ?></td>
+                            <td><?= number_format($order['total'], 0, ',', '.') ?></td>
+                            <td><?= $order['status'] ?></td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="id_pesanan" value="<?= $order['id_pesanan'] ?>">
+                                    <button type="submit" name="prosespesanan" class="btn btn-sm btn-success">Proses Produksi</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                    </tbody>
+                </table>
+            </section>
+        </div>
 
     <?php
     require "../partials/footer.php";

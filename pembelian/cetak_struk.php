@@ -6,7 +6,7 @@ require "../config/function.php";
 $no_transbeli = $_GET['no_transbeli'];
 
 // Ambil data pembelian berdasarkan no_transbeli
-$transaksi = getData("SELECT * FROM trans_pembelian WHERE no_transbeli = '$no_transbeli'")[0];
+$transaksi = getData("SELECT * FROM trans_pembelian WHERE no_transbeli = '$no_transbeli'");
 $detail = getData("SELECT * FROM trans_pemdetail WHERE no_transbeli = '$no_transbeli'");
 
 ?>

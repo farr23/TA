@@ -83,6 +83,7 @@ if(isset($_POST['update'])){
                                 <option value="1" <?= selectUser1($level) ?>>Administrator</option>
                                 <option value="2" <?= selectUser2($level) ?>>Manager</option>
                                 <option value="3" <?= selectUser3($level) ?>>Operator</option>
+                                <option value="4" <?= selectUser3($level) ?>>Operator2</option>
 
                             </select>
                         </div>

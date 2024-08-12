@@ -99,16 +99,13 @@ if (isset($_POST['simpan'])) {
                                     <label for="satuan">Satuan *</label>
                                     <select name="satuan" id="satuan" class="form-control" required>
                                         <?php
-                                        $satuan = ["kg", "ml", "piece"];
+                                        $satuan = ["g"];
                                         if ($msg != '') {
                                             foreach ($satuan as $sat) {
                                                 echo '<option value="' . $sat . '"' . ($bahan['satuan'] == $sat ? ' selected' : '') . '>' . $sat . '</option>';
                                             }
                                         } else { ?>
-                                            <option value="">-- Satuan Bahan --</option>
-                                            <option value="kg">kg</option>
-                                            <option value="ml">ml</option>
-                                            <option value="piece">piece</option>
+                                            <option value="g">kg</option>
                                         <?php
                                         }
                                         ?>

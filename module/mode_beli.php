@@ -142,4 +142,3 @@ function simpan($data){
     return true;
 }
 
-?>

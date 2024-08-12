@@ -85,6 +85,7 @@ if(isset($_POST['simpan'])){
                                 <option value="1">Administrator</option>
                                 <option value="2">Manager</option>
                                 <option value="3">Operator</option>
+                                <option value="3">Operator2</option>
                             </select>
                         </div>
                         <div class="form-group">

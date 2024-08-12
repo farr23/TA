@@ -117,7 +117,6 @@ $total_pages = ceil($total_row['total'] / $limit);
                                 <th>Stok Fisik</th>
                                 <th>Selisih</th>
                                 <th>Keterangan</th>
-                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -132,9 +131,6 @@ $total_pages = ceil($total_row['total'] / $limit);
                                     echo "<td>" . $row['stok_fisik'] . "</td>";
                                     echo "<td>" . $row['selisih'] . "</td>";
                                     echo "<td>" . $row['keterangan'] . "</td>";
-                                    echo "<td>
-                                            <a href='edit_stok_opname.php?id=" . $row['id_opname'] . "' class='btn btn-warning btn-sm'>Edit</a>
-                                          </td>";
                                     echo "</tr>";
                                 }
                             } else {

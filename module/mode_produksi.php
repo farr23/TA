@@ -63,80 +63,56 @@ function totalproduksi($noProduksi)
     return $row['total'];
 }
 
-//quotation
-function updateQuotationStatus($no_quotation, $status) {
+function prosespesanan($id_pesanan)
+{
     global $koneksi;
-    $query = "UPDATE tb_quotation SET status = ? WHERE no_quotation = ?";
-    $stmt = mysqli_prepare($koneksi, $query);
-    mysqli_stmt_bind_param($stmt, 'ss', $status, $no_quotation);
-    return mysqli_stmt_execute($stmt);
-}
 
-function getProcessedQuotations() {
-    global $koneksi;
-    $query = "SELECT * FROM tb_quotation WHERE status = 'processed'";
-    $result = mysqli_query($koneksi, $query);
-    $quotations = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $quotations[] = $row;
+    // Ambil detail pesanan
+    $queryDetail = "SELECT * FROM tb_detail_pesanan WHERE id_pesanan = '$id_pesanan'";
+    $resultDetail = mysqli_query($koneksi, $queryDetail);
+    $orderDetails = mysqli_fetch_all($resultDetail, MYSQLI_ASSOC);
+
+    // Buat nomor produksi baru
+    $no_produksi = generateno();
+    $tgl_produksi = date('Y-m-d'); // Atau ambil dari formulir
+
+    // Masukkan data produksi
+    $queryProduksi = "INSERT INTO tb_produksi (no_produksi, tgl_produksi, id_produk, total_produksi, status)
+                      VALUES ('$no_produksi', '$tgl_produksi', ?, ?, 'Sedang Diproses')";
+    $stmtProduksi = mysqli_prepare($koneksi, $queryProduksi);
+
+    foreach ($orderDetails as $detail) {
+        $id_produk = $detail['id_produk'];
+        $jumlah = $detail['jumlah'];
+
+        // Masukkan data produksi
+        mysqli_stmt_bind_param($stmtProduksi, 'si', $id_produk, $jumlah);
+        mysqli_stmt_execute($stmtProduksi);
+
+        // Masukkan detail produksi
+        $queryDetailProduksi = "INSERT INTO tb_produksi_detail (no_produksi, id_bahan, jumlah)
+                                VALUES ('$no_produksi', ?, ?)";
+        $stmtDetailProduksi = mysqli_prepare($koneksi, $queryDetailProduksi);
+
+        // Ambil bahan yang dibutuhkan untuk produk
+        $queryBahan = "SELECT * FROM tb_resep LEFT JOIN tb_bahan ON tb_resep.id_bahan = tb_bahan.id_bahan
+                       WHERE tb_resep.id_produk = '$id_produk'";
+        $bahanList = mysqli_query($koneksi, $queryBahan);
+        while ($bahan = mysqli_fetch_assoc($bahanList)) {
+            $id_bahan = $bahan['id_bahan'];
+            $jumlah_bahan = $bahan['jumlah'] * $jumlah;
+            mysqli_stmt_bind_param($stmtDetailProduksi, 'ii', $id_bahan, $jumlah_bahan);
+            mysqli_stmt_execute($stmtDetailProduksi);
+
+            // Update stok bahan
+            $queryUpdateStok = "UPDATE tb_bahan SET stok = stok - '$jumlah_bahan' WHERE id_bahan = '$id_bahan'";
+            mysqli_query($koneksi, $queryUpdateStok);
+        }
     }
-    return $quotations;
-}
 
-function getQuotations() {
-    global $koneksi;
-    $query = "SELECT * FROM tb_quotation";
-    $result = mysqli_query($koneksi, $query);
-    $quotations = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $quotations[] = $row;
-    }
-    return $quotations;
-}
-
-function getQuotationDetails($no_quotation) {
-    global $koneksi;
-    $query = "SELECT * FROM tb_quotation_detail WHERE no_quotation = '$no_quotation'";
-    $result = mysqli_query($koneksi, $query);
-    $details = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $details[] = $row;
-    }
-    return $details;
-}
-
-function getQuotationByNo($no_quotation) {
-    global $koneksi;
-    $query = "SELECT * FROM tb_quotation WHERE no_quotation = '$no_quotation'";
-    $result = mysqli_query($koneksi, $query);
-    return mysqli_fetch_assoc($result);
-}
-
-function insertQuotation($quotation) {
-    global $koneksi;
-    $query = "INSERT INTO tb_quotation (no_quotation, tgl_quotation, nm_customer, total, keterangan, status) VALUES (?, ?, ?, ?, ?, 'pending')";
-    $stmt = mysqli_prepare($koneksi, $query);
-    mysqli_stmt_bind_param($stmt, 'sssis', $quotation['noquotation'], $quotation['tglnota'], $quotation['customer'], $quotation['total'], $quotation['keterangan']);
-    return mysqli_stmt_execute($stmt);
-}
-
-function insertQuotationDetail($detail) {
-    global $koneksi;
-    $query = "INSERT INTO tb_quotation_detail (no_quotation, id_produk, nm_produk, qty, harga, jml_harga) VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = mysqli_prepare($koneksi, $query);
-    mysqli_stmt_bind_param($stmt, 'sssiis', $detail['noquotation'], $detail['id_produk'], $detail['nm_produk'], $detail['qty'], $detail['harga'], $detail['jml_harga']);
-    return mysqli_stmt_execute($stmt);
-}
-
-function totalQuotation($no_quotation) {
-    global $koneksi;
-    $query = "SELECT SUM(jml_harga) as total FROM tb_quotation_detail WHERE no_quotation = ?";
-    $stmt = mysqli_prepare($koneksi, $query);
-    mysqli_stmt_bind_param($stmt, 's', $no_quotation);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
-    return $row['total'];
+    // Update status pesanan
+    $queryUpdateStatus = "UPDATE tb_pesanan SET status = 'Sedang Diproses' WHERE id_pesanan = '$id_pesanan'";
+    mysqli_query($koneksi, $queryUpdateStatus);
 }
 
 
