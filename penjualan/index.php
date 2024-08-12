@@ -100,6 +100,7 @@ if (isset($_POST['simpan'])) {
 }
 
 $nojual = generateno();
+$nomorNota = generateNomorNota();
 
 ?>
 
@@ -130,23 +131,44 @@ $nojual = generateno();
                             <div class="form-group row mb-2">
                                 <label for="nojual" class="col-sm-2 col-form-label">No Nota</label>
                                 <div class="col-sm-4">
-                                    <input type="text" name="nojual" class="form-control" id="nojual" value="<?= $nojual ?>" readonly>
+                                    <input type="text" name="nojual" class="form-control" id="nojual"
+                                        value="<?= $nomorNota ?>" readonly>
                                 </div>
                                 <label for="tglnota" class="col-sm-2 col-form-label">Tgl Nota</label>
                                 <div class="col-sm-4">
-                                    <input type="date" name="tglnota" class="form-control" id="tglnota" value="<?= @$_GET['tgl'] ? $_GET['tgl'] : date('Y-m-d') ?>" required>
+                                    <input type="date" name="tglnota" class="form-control" id="tglnota"
+                                        value="<?= @$_GET['tgl'] ? $_GET['tgl'] : date('Y-m-d') ?>" required>
                                 </div>
                             </div>
                             <div class="form-group row mb-2">
-                                <label for="kodeproduk" class="col-sm-2 col-form-label">SKU</label>
+                                <label for="pesanan" class="col-sm-2 col-form-label">Pesanan</label>
                                 <div class="col-sm-10">
-                                    <select name="kodeproduk" id="kodeproduk" class="form-control">
-                                        <option value="">-- Pilih Kode Produk --</option>
+                                    <select name="pesanan" id="pesanan" class="form-control">
+                                        <option value="">-- Pilih Pesanan --</option>
                                         <?php
-                                        $produk = getData("SELECT * FROM tb_produk WHERE status = '1'");
-                                        foreach ($produk as $pdk) { ?>
-                                            <option value="?pilihpdk=<?= $pdk['id_produk'] ?><?= @$_GET['pilihpdk'] == $pdk['id_produk'] ? 'selected' : null ?>"><?= $pdk['id_produk'] . " | " . $pdk['nm_produk'] ?></option>
-                                        <?php
+                                        $pesanan = getData("SELECT * FROM tb_pesanan WHERE status = 'DiProduksi'");
+                                        foreach ($pesanan as $psn) {
+                                            if (!isset($_GET['pilihpsn'])) {
+                                                ?>
+                                                <option value="<?= $psn['id_pesanan'] ?>">
+                                                    <?= $psn['id_pesanan'] . " | " . $psn['nm_customer'] ?>
+                                                </option>
+                                                <?php
+                                            } else {
+                                                if ($_GET['pilihpsn'] == $psn['id_pesanan']) {
+                                                    ?>
+                                                    <option selected value="<?= $psn['id_pesanan'] ?>">
+                                                        <?= $psn['id_pesanan'] . " | " . $psn['nm_customer'] ?>
+                                                    </option><!--  -->
+                                                    <?php
+                                                } else {
+                                                    ?>
+                                                    <option value="<?= $psn['id_pesanan'] ?>">
+                                                        <?= $psn['id_pesanan'] . " | " . $psn['nm_customer'] ?>
+                                                    </option>
+                                                    <?php
+                                                }
+                                            }
                                         }
                                         ?>
                                     </select>
@@ -158,145 +180,146 @@ $nojual = generateno();
                         <div class="card card-outline card-danger pt-3 px-3 pb-2">
                             <h6 class="font-weight-bold text-right">Total Penjualan</h6>
                             <h1 class="font-weight-bold text-right" style="font-size: 40pt;">
-                            <input type="hidden" name="total" id="total" value="<?= totalJual($nojual) ?>"><?= number_format(totalJual($nojual),0,',','.') ?></h1>
-                        </div>
-                    </div>
-                  </div>
-                  <div class="card pt-1 pb-2 px-3">
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="form-group">
-                                <input type="hidden" value="<?= @$_GET['pilihpdk'] ? $selectpdk['id_produk'] : '' ?>" name="kodeproduk">
-                                <label for="nmproduk">Nama Produk</label>
-                                <input type="text" name="nmproduk" class="form-control form-control-sm" id="nmproduk" value="<?= @$_GET['pilihpdk'] ? $selectpdk['nm_produk'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                        <div class="col-lg-1">
-                            <div class="form-group">
-                                <label for="stok">Stok Produk</label>
-                                <input type="number" name="stok" class="form-control form-control-sm" id="stok" value="<?= @$_GET['pilihpdk'] ? $selectpdk['stok'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <label for="harga">Harga</label>
-                                <input type="number" name="harga" class="form-control form-control-sm" id="harga" value="<?= @$_GET['pilihpdk'] ? $selectpdk['harga_jual'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <label for="qty">Qty</label>
-                                <input type="number" name="qty" class="form-control form-control-sm" id="qty" value="<?= @$_GET['pilihpdk'] ? 1 : '' ?>">
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <label for="jmlharga">Jumlah Harga</label>
-                                <input type="number" name="jmlharga" class="form-control form-control-sm" id="jmlharga" value="<?= @$_GET['pilihpdk'] ? $selectpdk['harga_jual'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-info btn-block" name="addpdk"><i class="fas fa-cart-plus fa-sm mr-2"></i>Tambah Produk</button>
-                  </div>
-                  <div class="card card-outline card-success table-responsive px-2">
-                    <table class="table table-sm table-hover text-nowrap">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Kode Produk</th>
-                                <th>Nama Produk</th>
-                                <th class="text-right">Harga</th>
-                                <th class="text-right">Qty</th>
-                                <th class="text-center">Jumlah Harga</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php
-                            $no = 1;
-                            foreach ($_SESSION['penjualan'] as $detail) { ?>
-                                <tr>
-                                    <td><?= $no++ ?></td>
-                                    <td><?= $detail['id_produk'] ?></td>
-                                    <td><?= $detail['nm_produk'] ?></td>
-                                    <td class="text-right"><?= number_format($detail['harga'], 0, ',', '.') ?></td>
-                                    <td class="text-right"><?= $detail['qty'] ?></td>
-                                    <td class="text-right"><?= number_format($detail['jml_harga'], 0, ',', '.') ?></td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row">
-                <div class="col-lg-4 p-2">
-                    <div class="form-group row mb-2">
-                        <label for="customer" class="col-sm-3 col-form-label col-form-label-sm">Customer</label>
-                        <div class="col-sm-9">
-                            <select name="customer" id="customer" class="form-control form-control-sm">
-                                <option value="">-- Pilih Customer --</option>
                                 <?php
-                                $customers = getData("SELECT * FROM tb_customer WHERE status = '1'");
-                                foreach ($customers as $customer) { ?>
-                                <option value="<?= $customer['nm_customer'] ?>"><?= $customer['nm_customer'] ?></option>
-                                <?php
+                                if (isset($_GET['pilihpsn'])) {
+                                    $idPesanan = $_GET['pilihpsn'];
+                                    $queryGetPesanan = "SELECT * FROM tb_pesanan
+                                                        WHERE id_pesanan='$idPesanan'";
+                                    $getPesanan = $koneksi->query($queryGetPesanan);
+                                    $dataPesanan = mysqli_fetch_assoc($getPesanan);
+                                    ?>
+                                    <input type="hidden" name="total" id="total"
+                                        value="<?= $dataPesanan['total'] ?>"><?= number_format($dataPesanan['total'], 0, ',', '.') ?>
+                                    <?php
                                 }
                                 ?>
-                            </select>
+                            </h1>
                         </div>
-                      </div>
-                      <div class="form-group row mb-2">
+                    </div>
+                </div>
+
+                <?php
+                if (isset($_GET['pilihpsn'])) {
+                    $idPesanan = $_GET['pilihpsn'];
+                    ?>
+                    <div class="card card-outline card-success table-responsive px-2">
+                        <table class="table table-sm table-hover text-nowrap">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Kode Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th class="text-right">Harga</th>
+                                    <th class="text-right">Qty</th>
+                                    <th class="text-center">Jumlah Harga</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $queryGetPesanan = "SELECT * FROM tb_detail_pesanan
+                                LEFT JOIN tb_pesanan ON tb_detail_pesanan.id_pesanan = tb_pesanan.id_pesanan
+                                WHERE tb_detail_pesanan.id_pesanan='$idPesanan'";
+                                $getPesanan = $koneksi->query($queryGetPesanan);
+                                $no = 1;
+                                while ($dataPesanan = mysqli_fetch_assoc($getPesanan)) { ?>
+                                    <tr>
+                                        <td><?= $no++ ?></td>
+                                        <td><?= $dataPesanan['id_produk'] ?></td>
+                                        <td><?= $dataPesanan['nm_produk'] ?></td>
+                                        <td class="text-right"><?= number_format($dataPesanan['harga_jual'], 0, ',', '.') ?>
+                                        </td>
+                                        <td class="text-right"><?= $dataPesanan['jumlah'] ?></td>
+                                        <td class="text-right"><?= number_format($dataPesanan['jml_harga'], 0, ',', '.') ?></td>
+                                    </tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?php
+                }
+                ?>
+
+                <div class="row">
+                    <div class="col-lg-4 p-2">
+                        <div class="form-group row mb-2">
+                            <label for="customer" class="col-sm-3 col-form-label col-form-label-sm">Customer</label>
+                            <div class="col-sm-9">
+                                <select name="customer" id="customer" class="form-control form-control-sm">
+                                    <option value="">-- Pilih Customer --</option>
+                                    <?php
+                                    $customers = getData("SELECT * FROM tb_customer WHERE status = '1'");
+                                    foreach ($customers as $customer) { ?>
+                                        <option value="<?= $customer['nm_customer'] ?>"><?= $customer['nm_customer'] ?>
+                                        </option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-2">
                             <label for="keterangan" class="col-sm-3 col-form-label">Keterangan</label>
                             <div class="col-sm-9">
-                                <textarea name="keterangan" id="keterangan" class="form-control form-control-sm"></textarea>
+                                <textarea name="keterangan" id="keterangan"
+                                    class="form-control form-control-sm"></textarea>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-4 py-2 px-3">
-                      <div class="form-group row mb-2">
-                        <label for="bayar" class="col-sm-3 col-form-label">Bayar</label>
-                        <div class="col-sm-9">
-                          <input type="number" name="bayar" class="form-control form-control-sm text-right" id="bayar">
+                        <div class="form-group row mb-2">
+                            <label for="bayar" class="col-sm-3 col-form-label">Bayar</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="bayar" class="form-control form-control-sm text-right"
+                                    id="bayar">
+                            </div>
                         </div>
-                      </div>
-                      <div class="form-group row mb-2">
-                        <label for="kembalian" class="col-sm-3 col-form-label">Kembalian</label>
-                        <div class="col-sm-9">
-                          <input type="number" name="kembalian" class="form-control form-control-sm text-right" id="kembalian" readonly>
+                        <div class="form-group row mb-2">
+                            <label for="kembalian" class="col-sm-3 col-form-label">Kembalian</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="kembalian" class="form-control form-control-sm text-right"
+                                    id="kembalian" readonly>
+                            </div>
                         </div>
-                      </div>
                     </div>
                     <div class="col-lg-4 p-2">
-                        <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn-sm btn-block"><i class="fas fa-save fa-sm mr-2"></i>Simpan</button>
+                        <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn-sm btn-block"><i
+                                class="fas fa-save fa-sm mr-2"></i>Simpan</button>
                     </div>
                 </div>
-              </form>
-            </section>
+            </form>
+    </section>
 
-<script>
-    let pilihpdk = document.getElementById('kodeproduk');
-    let tgl = document.getElementById('tglnota');
+    <script>
+        $(document).ready(function () {
+            $('#pesanan').select2({
+                theme: "classic"
+            });
+            $('#pesanan').on('change', function () {
+                if (this.value != '') {
+                    // Ambil nilai yang dipilih dari select box
+                    const selectedValue = this.value;
 
-    pilihpdk.addEventListener('change', function(){
-        document.location.href = this.options[this.selectedIndex].value + '&tgl=' + tgl.value;
-    });
+                    // Dapatkan URL saat ini
+                    const currentUrl = new URL(window.location.href);
 
-    let qty = document.getElementById('qty');
-    let harga = document.getElementById('harga');
-    let jmlharga = document.getElementById('jmlharga');
-    qty.addEventListener('input', function(){
-        jmlharga.value = qty.value * harga.value;
-    });
+                    console.log(selectedValue);
 
-    let bayar = document.getElementById('bayar');
-    let total = document.getElementById('total').value;
-    let kembalian = document.getElementById('kembalian');
+                    // Setel atau perbarui parameter pilihpsn
+                    currentUrl.searchParams.set('pilihpsn', selectedValue);
 
-    bayar.addEventListener('input', function() {
-        kembalian.value = bayar.value - total;
-    });
-</script>
+                    // Update URL tanpa reload halaman
+                    window.history.replaceState({}, '', currentUrl);
 
-<?php
+                    // Redirect ke URL baru dengan parameter yang diperbarui
+                    window.location.href = currentUrl.href;
+                }
 
-require "../partials/footer.php";
+            });
+        });
+    </script>
 
-?>
+    <?php
+
+    require "../partials/footer.php";
+
+    ?>

@@ -1,5 +1,13 @@
 <?php
 
+function generateNomorNota(){
+    $code = "PJ";
+    $dateSekarang = date('Ymd');
+    $randomInt = rand(100,999);
+    $nomorNota = $code . $dateSekarang . $randomInt;
+    return $nomorNota;
+}
+
 function uploadimg($url = null, $name = null){
     $namafile   = $_FILES['gambar']['name'];
     $ukuran     = $_FILES['gambar']['size'];
