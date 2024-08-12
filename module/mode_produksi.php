@@ -21,22 +21,29 @@ function delete($idBahan, $noProduksi, $qty)
 function simpan($data)
 {
     global $koneksi;
-    $noProduksi = $data['no_transprod'];
-    $tglProduksi = $data['tglproduksi'];
-    $idProduk = $data['idproduk'];
-    $qty = $data['qty'];
+    $tglProduksi = $_POST['tglproduksi'];
 
-    $query = "INSERT INTO tb_produksi (no_produksi, tgl_produksi, id_produk, total_produksi) VALUES ('$noProduksi', '$tglProduksi', '$idProduk', '$qty')";
-    if (mysqli_query($koneksi, $query)) {
-        foreach ($data['idbahan'] as $index => $value) {
-            $bahan = $data['idbahan'][$index];
-            $jumlahBahan = $data['jumlahbahan'][$index] * $qty;
-            $queryInsertDetail = "INSERT INTO tb_produksi_detail VALUES('', '$noProduksi', '$bahan', '$jumlahBahan')";
-            mysqli_query($koneksi, $queryInsertDetail);
+    // insert tiap produk ke tabel produksi
+    foreach ($_POST['produk'] as $key => $value) {
+        $noProduksi = "PROD" . rand(0, 9999);
+        $idProduk = $value;
+        $totalProduksi = $_POST['jumlahproduk'][$key];
+        $queryInsertProduksi = "INSERT INTO tb_produksi VALUES('', '$noProduksi', '$tglProduksi', '$value', '$totalProduksi', 'Selesai')";
+        $insertProduksi = $koneksi->query($queryInsertProduksi);
 
-            $queryUpdateStok = "UPDATE tb_bahan SET stok = stok - '$jumlahBahan' WHERE id_bahan = '$bahan'";
-            mysqli_query($koneksi, $queryUpdateStok);
+        // Insert tiap bahan pada produk ke detail produksi
+        foreach ($_POST['idbahan'][$key] as $keyBahan => $valueBahan) {
+            $bahan = $valueBahan;
+            $jumlahBahan = $_POST['jumlahbahan'][$key][$keyBahan];
+            $queryInsertDetilProduksi = "INSERT INTO tb_produksi_detail VALUES('', '$noProduksi', '$bahan', '$jumlahBahan')";
+            $insertDetilProduksi = $koneksi->query($queryInsertDetilProduksi);
         }
+    }
+
+    $idPesanan = $_GET['idpesanan'];
+    $queryUpdatePesanan = "UPDATE tb_pesanan SET status = 'Diproduksi' WHERE id_pesanan = '$idPesanan'";
+    $updatePesanan = $koneksi->query($queryUpdatePesanan);
+    if($updatePesanan){
         return true;
     } else {
         return false;

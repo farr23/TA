@@ -50,13 +50,12 @@ if (isset($_GET['idpesanan'])) {
 }
 
 if (isset($_POST['simpan'])) {
-
-    if (simpan($_POST)) {
-        echo "<script>
-                alert('Data produksi berhasil disimpan');
-                document.location = 'hasil_produksi.php';
-        </script>";
-    }
+        if(simpan($_POST)){
+            echo "<script>
+            alert('Data produksi berhasil disimpan');
+            document.location = 'hasil_produksi.php';
+            </script>";
+        }
 }
 
 $pendingOrders = getData("SELECT * FROM tb_pesanan WHERE status = 'Pending'");
@@ -104,10 +103,8 @@ $notransproduksi = generateno();
                                                 value="<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" required>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
-
                         </div>
                         <?php
                         foreach ($pesanan as $key => $value) {
@@ -118,6 +115,8 @@ $notransproduksi = generateno();
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
+                                        <input type="text" name="produk[]" value="<?= $value['id_produk'] ?>" hidden readonly>
+                                        <input type="text" name="jumlahproduk[]" value="<?= $value['jumlah'] ?>" hidden readonly>
                                         <?php
                                         foreach ($value['resep'] as $resep) {
                                             ?>
@@ -125,6 +124,7 @@ $notransproduksi = generateno();
                                                 <div class="col-lg-6">
                                                     <div class="mb-3">
                                                         <label for="bahan" class="form-label">Bahan</label>
+                                                        <input type="text" name="idbahan[<?= $key ?>][]" id="idbahan[<?= $key ?>][]" value="<?= $resep['id_bahan'] ?>" hidden>
                                                         <input type="text" class="form-control" name="bahan[<?= $key ?>][]" id="bahan[<?= $key ?>][]"
                                                             aria-describedby="helpId" placeholder="" value="<?= $resep['nm_bahan'] ?>" readonly />
                                                     </div>
