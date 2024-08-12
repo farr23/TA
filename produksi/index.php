@@ -28,26 +28,24 @@ if ($msg == 'deleted') {
     </script>";
 }
 
-$selectedProduk = null;
-$selectedKategori = null;
-if (isset($_GET['pilihproduk'])) {
-    $kode = $_GET['pilihproduk'];
-    $produkData = getData("SELECT * FROM tb_produk WHERE id_produk = '$kode'");
-    $kategoriData = getData("SELECT * FROM tb_kategori WHERE id_kategori = (SELECT id_kategori FROM tb_produk WHERE id_produk = '$kode')AND status = '1'");
+if (isset($_GET['idpesanan'])) {
+    $idPesanan = $_GET['idpesanan'];
+    $queryGetPesanan = "SELECT * FROM tb_detail_pesanan 
+    LEFT JOIN tb_pesanan ON tb_detail_pesanan.id_pesanan = tb_pesanan.id_pesanan
+    LEFT JOIN tb_produk ON tb_detail_pesanan.id_produk = tb_produk.id_produk
+    LEFT JOIN tb_kategori ON tb_produk.id_kategori = tb_kategori.id_kategori
+    WHERE tb_detail_pesanan.id_pesanan ='$idPesanan'";
 
-    $selectedProduk = !empty($produkData) ? $produkData[0] : null;
-    $selectedKategori = !empty($kategoriData) ? $kategoriData[0] : null;
-}
+    $getPesanan = $koneksi->query($queryGetPesanan);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['prosespesanan']) && isset($_POST['id_pesanan'])) {
-        $id_pesanan = $_POST['id_pesanan'];
-        prosespesanan($id_pesanan);
-
-        echo "<script>
-                alert('Pesanan berhasil diproses');
-                document.location = 'hasil_produksi.php';
-        </script>";
+    while ($row = mysqli_fetch_assoc($getPesanan)) {
+        $idProduk = $row['id_produk'];
+        $queryGetResep = "SELECT * FROM tb_resep LEFT JOIN tb_bahan ON tb_resep.id_bahan = tb_bahan.id_bahan WHERE id_produk = '$idProduk'";
+        $getResep = $koneksi->query($queryGetResep);
+        while ($rowResep = mysqli_fetch_assoc($getResep)) {
+            $row['resep'][] = $rowResep;
+        }
+        $pesanan[] = $row;
     }
 }
 
@@ -87,135 +85,90 @@ $notransproduksi = generateno();
 
         <section>
             <div class="container-fluid">
-                <form action="" method="post">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="card card-outline card-warning p-3">
-                                <div class="form-group row mb-2">
-                                    <label for="no_transprod" class="col-sm-2 col-form-label">No Produksi</label>
-                                    <div class="col-sm-4">
-                                        <input type="text" name="no_transprod" class="form-control" id="no_transprod"
-                                            value="<?= $notransproduksi ?>" readonly>
+                <?php
+                if (isset($_GET['idpesanan'])) {
+                    ?>
+                    <form action="" method="post">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card card-outline card-warning p-3">
+                                    <div class="form-group row mb-2">
+                                        <label for="no_transprod" class="col-sm-2 col-form-label">No Produksi</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" name="no_transprod" class="form-control" id="no_transprod"
+                                                value="<?= $notransproduksi ?>" readonly>
+                                        </div>
+                                        <label for="tglproduksi" class="col-sm-2 col-form-label">Tgl Produksi</label>
+                                        <div class="col-sm-4">
+                                            <input type="date" name="tglproduksi" class="form-control" id="tglproduksi"
+                                                value="<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" required>
+                                        </div>
                                     </div>
-                                    <label for="tglproduksi" class="col-sm-2 col-form-label">Tgl Produksi</label>
-                                    <div class="col-sm-4">
-                                        <input type="date" name="tglproduksi" class="form-control" id="tglproduksi"
-                                            value="<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" required>
-                                    </div>
+
                                 </div>
-                                <div class="form-group row mb-2">
-                                    <label for="idproduk" class="col-sm-2 col-form-label">Produk</label>
-                                    <div class="col-sm-10">
-                                        <select name="idproduk" id="idproduk" class="form-control"
-                                            onchange="location = this.value;">
-                                            <option value="">-- Pilih Kode Produk --</option>
-                                            <?php
-                                            $produk = getData("SELECT * FROM tb_produk WHERE status = '1'");
-                                            foreach ($produk as $pdk) { ?>
-                                                <option value="?pilihproduk=<?= $pdk['id_produk'] ?>"
-                                                    <?= isset($_GET['pilihproduk']) && $_GET['pilihproduk'] == $pdk['id_produk'] ? 'selected' : '' ?>>
-                                                    <?= $pdk['id_produk'] . " | " . $pdk['nm_produk'] ?>
-                                                </option>
-                                                <?php
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
+                            </div>
+
+                        </div>
+                        <?php
+                        foreach ($pesanan as $key => $value) {
+                            ?>
+                            <div class="card pb-2 px-3">
+                                <div class="card-header text-center">
+                                    <?= $value['jumlah'] . ' ' . $value['nm_produk'] ?>
                                 </div>
-                                <?php
-                                if (isset($_GET['pilihproduk'])) {
-                                    $kodeProduk = $_GET['pilihproduk'];
-                                    $queryGetResep = "SELECT * FROM tb_resep LEFT JOIN tb_bahan ON tb_resep.id_bahan = tb_bahan.id_bahan WHERE tb_resep.id_produk = '$kodeProduk'";
-                                    $getResep = mysqli_query($koneksi, $queryGetResep);
-                                    if (mysqli_num_rows($getResep) > 0) {
-                                        while ($row = mysqli_fetch_assoc($getResep)) {
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <?php
+                                        foreach ($value['resep'] as $resep) {
                                             ?>
-                                            <div id="bahan-section">
-                                                <div class="bahan-item">
-                                                    <div class="row">
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Bahan:</label>
-                                                                <input type="text" class="form-control" name="idbahan[]"
-                                                                    id="idbahan[]" value="<?= $row['id_bahan'] ?>" readonly hidden />
-                                                                <input type="text" class="form-control" name="bahan" id="bahan"
-                                                                    placeholder="Bahan" value="<?= $row['nm_bahan'] ?>" readonly />
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Jumlah:</label>
-                                                                <input type="text" class="form-control" name="jumlahbahan[]"
-                                                                    id="jumlahbahan[]" placeholder="Jumlah"
-                                                                    value="<?= $row['jumlah'] ?>" readonly />
-                                                            </div>
-                                                        </div>
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="bahan" class="form-label">Bahan</label>
+                                                        <input type="text" class="form-control" name="bahan[<?= $key ?>][]" id="bahan[<?= $key ?>][]"
+                                                            aria-describedby="helpId" placeholder="" value="<?= $resep['nm_bahan'] ?>" readonly />
                                                     </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <label for="jumlahbahan" class="form-label">Jumlah</label>
+                                                    <input type="text" class="form-control" name="jumlahbahan[<?= $key ?>][]" id="jumlahbahan[<?= $key ?>][]"
+                                                        aria-describedby="helpId" placeholder="" value="<?= $value['jumlah'] * $resep['jumlah'] ?>" readonly/>
                                                 </div>
                                             </div>
                                             <?php
                                         }
-                                    } else {
                                         ?>
-                                        <div>
-                                            <h5>Belum Terdata</h5>
-                                        </div>
-                                        <?php
-                                    }
-                                }
-                                ?>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-muted text-center">
+                                    <?= $value['nm_kategori'] ?>
+                                </div>
                             </div>
+                            <?php
+                        }
+                        ?>
+                        <div class="card-footer">
+                            <button type="submit" name="simpan" class="btn btn-primary">Simpan</button>
+                            <a href="index.php" class="btn btn-secondary">Batal</a>
                         </div>
-
-                    </div>
-                    <div class="card pt-1 pb-2 px-3">
-                        <div class="row">
-                            <div class="col-lg-3">
-                                <div class="form-group">
-                                    <input type="hidden"
-                                        value="<?= isset($_GET['pilihproduk']) ? $selectedProduk['id_produk'] : '' ?>"
-                                        name="idproduk">
-                                    <label for="nmproduk">Nama Produk</label>
-                                    <input type="text" name="nmproduk" id="nmproduk" class="form-control"
-                                        value="<?= isset($selectedProduk['nm_produk']) ? $selectedProduk['nm_produk'] : '' ?>"
-                                        readonly>
-                                </div>
-                            </div>
-                            <div class="col-lg-3">
-                                <div class="form-group">
-                                    <label for="kategori">Kategori</label>
-                                    <input type="text" name="kategori" id="kategori" class="form-control"
-                                        value="<?= isset($selectedKategori['nm_kategori']) ? $selectedKategori['nm_kategori'] : '' ?>"
-                                        readonly>
-                                </div>
-                            </div>
-                            <div class="col-lg-3">
-                                <div class="form-group">
-                                    <label for="qty">Jumlah</label>
-                                    <input type="number" name="qty" id="qty" class="form-control" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <button type="submit" name="simpan" class="btn btn-primary">Simpan</button>
-                        <a href="index.php" class="btn btn-secondary">Batal</a>
-                    </div>
-                </form>
-                </div>
-                <h5>Pesanan Siap Diproduksi</h5>
-                <table class="table table-sm table-hover text-nowrap">
-                    <thead>
-                        <tr>
-                            <th>No Pesan</th>
-                            <th>Tanggal</th>
-                            <th>Customer</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                    </form>
+                    <?php
+                }
+                ?>
+            </div>
+            <h5>Pesanan Siap Diproduksi</h5>
+            <table class="table table-sm table-hover text-nowrap">
+                <thead>
+                    <tr>
+                        <th>No Pesan</th>
+                        <th>Tanggal</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <?php foreach ($pendingOrders as $order) { ?>
                         <tr>
                             <td><?= $order['id_pesanan'] ?></td>
@@ -226,15 +179,38 @@ $notransproduksi = generateno();
                             <td>
                                 <form action="" method="post">
                                     <input type="hidden" name="id_pesanan" value="<?= $order['id_pesanan'] ?>">
-                                    <button type="submit" name="prosespesanan" class="btn btn-sm btn-success">Proses Produksi</button>
+
+                                    <?php
+                                    if (isset($_GET['idpesanan'])) {
+                                        if ($_GET['idpesanan'] == $order['id_pesanan']) {
+                                            ?>
+                                            <a name="prosespesanan" id="prosespesanan" class="btn btn-primary"
+                                                href="?idpesanan=<?= $order['id_pesanan'] ?>" disabled role="button">Dipilih</a>
+                                            <?php
+                                        } else {
+                                            ?>
+                                            <a name="prosespesanan" id="prosespesanan" class="btn btn-success"
+                                                href="?idpesanan=<?= $order['id_pesanan'] ?>" role="button">Proses Pesanan</a>
+                                            <?php
+                                        }
+                                    } else {
+                                        ?>
+                                        <a name="prosespesanan" id="prosespesanan" class="btn btn-success"
+                                            href="?idpesanan=<?= $order['id_pesanan'] ?>" role="button">Proses Pesanan</a>
+                                        <?php
+                                    }
+                                    ?>
+
                                 </form>
                             </td>
                         </tr>
                     <?php } ?>
-                    </tbody>
-                </table>
-            </section>
-        </div>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+
 
     <?php
     require "../partials/footer.php";
