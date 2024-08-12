@@ -187,6 +187,8 @@ $nomorNota = generateNomorNota();
                                                         WHERE id_pesanan='$idPesanan'";
                                     $getPesanan = $koneksi->query($queryGetPesanan);
                                     $dataPesanan = mysqli_fetch_assoc($getPesanan);
+
+                                    $customer = $dataPesanan['nm_customer'];
                                     ?>
                                     <input type="hidden" name="total" id="total"
                                         value="<?= $dataPesanan['total'] ?>"><?= number_format($dataPesanan['total'], 0, ',', '.') ?>
@@ -242,19 +244,10 @@ $nomorNota = generateNomorNota();
                 <div class="row">
                     <div class="col-lg-4 p-2">
                         <div class="form-group row mb-2">
-                            <label for="customer" class="col-sm-3 col-form-label col-form-label-sm">Customer</label>
+                            <label for="customer" class="col-sm-3 col-form-label col-form-label">Customer</label>
                             <div class="col-sm-9">
-                                <select name="customer" id="customer" class="form-control form-control-sm">
-                                    <option value="">-- Pilih Customer --</option>
-                                    <?php
-                                    $customers = getData("SELECT * FROM tb_customer WHERE status = '1'");
-                                    foreach ($customers as $customer) { ?>
-                                        <option value="<?= $customer['nm_customer'] ?>"><?= $customer['nm_customer'] ?>
-                                        </option>
-                                        <?php
-                                    }
-                                    ?>
-                                </select>
+                                <input type="text" class="form-control" name="customer" id="customer"
+                                    value="<?= isset($customer) ? $customer : '' ?>" disabled />
                             </div>
                         </div>
                         <div class="form-group row mb-2">
