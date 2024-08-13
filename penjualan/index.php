@@ -16,47 +16,6 @@ require "../partials/header.php";
 require "../partials/navbar.php";
 require "../partials/sidebar.php";
 
-// Inisialisasi session untuk menyimpan detail penjualan sementara
-if (!isset($_SESSION['penjualan'])) {
-    $_SESSION['penjualan'] = [];
-}
-
-$kode = @$_GET['pilihpdk'] ? $_GET['pilihpdk'] : '';
-$selectpdk = null; // Pastikan $selectpdk terdefinisi
-if ($kode) {
-    $tgl = $_GET['tgl'];
-    $datapdk = mysqli_query($koneksi, "
-        SELECT 
-            p.*, 
-            COALESCE(SUM(pro.total_produksi), 0) AS stok 
-        FROM 
-            tb_produk p 
-            LEFT JOIN tb_produksi pro ON p.id_produk = pro.id_produk 
-        WHERE 
-            p.id_produk = '$kode'
-    ");
-    if (mysqli_num_rows($datapdk) > 0) {
-        $selectpdk = mysqli_fetch_assoc($datapdk);
-    } else {
-        echo "<script>
-                alert('produk tidak ada');
-                document.location = 'index.php?tgl=$tgl';
-              </script>";
-    }
-}
-
-if (isset($_POST['addpdk'])) {
-    $produk = [
-        'id_produk' => $_POST['kodeproduk'],
-        'nm_produk' => $_POST['nmproduk'],
-        'harga' => $_POST['harga'],
-        'qty' => $_POST['qty'],
-        'jml_harga' => $_POST['jmlharga'],
-        'tglnota' => $_POST['tglnota'],
-        'nojual' => $_POST['nojual']
-    ];
-    $_SESSION['penjualan'][] = $produk;
-}
 
 if (isset($_POST['simpan'])) {
     $tgl = $_POST['tglnota'];
@@ -65,9 +24,7 @@ if (isset($_POST['simpan'])) {
     $keterangan = $_POST['keterangan'];
     $bayar = $_POST['bayar'];
     $kembalian = $_POST['kembalian'];
-
-    // Hitung total harga
-    $total = array_sum(array_column($_SESSION['penjualan'], 'jml_harga'));
+    $total = $_POST['total'];
 
     if ($bayar < $total) {
         echo "<script>
@@ -88,18 +45,26 @@ if (isset($_POST['simpan'])) {
     ];
 
     if (insertPenjualan($penjualan)) {
-        foreach ($_SESSION['penjualan'] as $produk) {
-            kurangiStok($produk['id_produk'], $produk['qty']);
-            insertDetail($produk);
+        $idPesanan = $_GET['pilihpsn'];
+        $queryGetPesanan = "SELECT * FROM tb_detail_pesanan
+                                LEFT JOIN tb_pesanan ON tb_detail_pesanan.id_pesanan = tb_pesanan.id_pesanan
+                                LEFT JOIN tb_produk ON tb_detail_pesanan.id_produk = tb_produk.id_produk
+                                WHERE tb_detail_pesanan.id_pesanan='$idPesanan'";
+        $getPesanan = $koneksi->query($queryGetPesanan);
+
+        while ($dataPesanan = mysqli_fetch_assoc($getPesanan)) {
+            kurangiStok($dataPesanan['id_produk'], $dataPesanan['jumlah']);
+            insertDetail($dataPesanan, $nojual, $tgl);
         }
-        unset($_SESSION['penjualan']);
+        $queryUpdatePesanan = "UPDATE tb_pesanan SET status = 'Selesai' WHERE id_pesanan = '$idPesanan'";
+        $updatePesanan = $koneksi->query($queryUpdatePesanan);
+
         echo "<script>
                 document.location = 'cetak_struk_penjualan.php?nojual=$nojual';
               </script>";
     }
 }
 
-$nojual = generateno();
 $nomorNota = generateNomorNota();
 
 ?>
@@ -143,7 +108,7 @@ $nomorNota = generateNomorNota();
                             <div class="form-group row mb-2">
                                 <label for="pesanan" class="col-sm-2 col-form-label">Pesanan</label>
                                 <div class="col-sm-10">
-                                    <select name="pesanan" id="pesanan" class="form-control">
+                                    <select name="pesanan" id="pesanan" class="form-control" required>
                                         <option value="">-- Pilih Pesanan --</option>
                                         <?php
                                         $pesanan = getData("SELECT * FROM tb_pesanan WHERE status = 'DiProduksi'");
@@ -247,13 +212,13 @@ $nomorNota = generateNomorNota();
                             <label for="customer" class="col-sm-3 col-form-label col-form-label">Customer</label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" name="customer" id="customer"
-                                    value="<?= isset($customer) ? $customer : '' ?>" disabled />
+                                    value="<?= isset($customer) ? $customer : '' ?>" readonly required />
                             </div>
                         </div>
                         <div class="form-group row mb-2">
                             <label for="keterangan" class="col-sm-3 col-form-label">Keterangan</label>
                             <div class="col-sm-9">
-                                <textarea name="keterangan" id="keterangan"
+                                <textarea required name="keterangan" id="keterangan"
                                     class="form-control form-control-sm"></textarea>
                             </div>
                         </div>
@@ -262,8 +227,8 @@ $nomorNota = generateNomorNota();
                         <div class="form-group row mb-2">
                             <label for="bayar" class="col-sm-3 col-form-label">Bayar</label>
                             <div class="col-sm-9">
-                                <input type="number" name="bayar" class="form-control form-control-sm text-right"
-                                    id="bayar">
+                                <input required type="number" name="bayar"
+                                    class="form-control form-control-sm text-right" id="bayar">
                             </div>
                         </div>
                         <div class="form-group row mb-2">
@@ -308,6 +273,19 @@ $nomorNota = generateNomorNota();
                 }
 
             });
+
+            $('#bayar').on('keyup mouseup', function () {
+                const bayar = parseInt(this.value);
+                const totalPembayaran = parseInt($('#total').val());
+
+                if (bayar > totalPembayaran) {
+                    const kembalian = bayar - totalPembayaran;
+                    $('#kembalian').val(kembalian);
+                    console.log(bayar - totalPembayaran);
+                } else {
+                    $('#kembalian').val('');
+                }
+            })
         });
     </script>
 

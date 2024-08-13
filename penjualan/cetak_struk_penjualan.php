@@ -6,7 +6,7 @@ require "../config/function.php";
 $nojual = $_GET['nojual'];
 
 // Ambil data penjualan berdasarkan nojual
-$penjualan = getData("SELECT * FROM tb_penjualan WHERE nojual = '$nojual'");
+$penjualan = getData("SELECT * FROM trans_penjualan WHERE no_transjual = '$nojual'");
 
 // Cek apakah data penjualan ditemukan
 if (empty($penjualan)) {
@@ -15,7 +15,7 @@ if (empty($penjualan)) {
 }
 
 $penjualan = $penjualan[0];
-$detail = getData("SELECT * FROM trans_jualdetail WHERE nojual = '$nojual'");
+$detail = getData("SELECT * FROM trans_penjudetail WHERE no_transjual = '$nojual'");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -37,9 +37,9 @@ $detail = getData("SELECT * FROM trans_jualdetail WHERE nojual = '$nojual'");
     <div class="struk-container">
         <h2>Cafe Qita</h2>
         <p>Struk Penjualan</p>
-        <p>No. Nota: <?= $penjualan['nojual'] ?></p>
-        <p>Tanggal: <?= $penjualan['tglnota'] ?></p>
-        <p>Customer: <?= $penjualan['customer'] ?></p>
+        <p>No. Nota: <?= $penjualan['no_transjual'] ?></p>
+        <p>Tanggal: <?= $penjualan['tgl_transjual'] ?></p>
+        <p>Customer: <?= $penjualan['nm_customer'] ?></p>
         
         <table>
             <thead>
@@ -58,8 +58,8 @@ $detail = getData("SELECT * FROM trans_jualdetail WHERE nojual = '$nojual'");
                     <tr>
                         <td><?= $no++ ?></td>
                         <td><?= $item['nm_produk'] ?></td>
-                        <td class="text-right"><?= number_format($item['harga'], 0, ',', '.') ?></td>
-                        <td class="text-right"><?= $item['qty'] ?></td>
+                        <td class="text-right"><?= number_format($item['harga_jual'], 0, ',', '.') ?></td>
+                        <td class="text-right"><?= $item['jumlah'] ?></td>
                         <td class="text-right"><?= number_format($item['jml_harga'], 0, ',', '.') ?></td>
                     </tr>
                 <?php } ?>
@@ -71,7 +71,7 @@ $detail = getData("SELECT * FROM trans_jualdetail WHERE nojual = '$nojual'");
                 </tr>
                 <tr>
                     <th colspan="4" class="text-right">Bayar</th>
-                    <th class="text-right"><?= number_format($penjualan['bayar'], 0, ',', '.') ?></th>
+                    <th class="text-right"><?= number_format($penjualan['jml_bayar'], 0, ',', '.') ?></th>
                 </tr>
                 <tr>
                     <th colspan="4" class="text-right">Kembalian</th>
